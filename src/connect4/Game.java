@@ -12,10 +12,11 @@ public class Game {
     //Create the JPanel
     JPanel panel = new JPanel(new GridLayout(7,7));
 
-//    int row = 0;
-//    int col = 0;
-//    while (){
-//        JButton button = new JButton(new ImageIcon());
+//    int row = 1;
+//    int col = 1;
+//    while (col < 7){
+//        JButton button = new JButton(new ImageIcon("black.png"));
+//        panel.add(button);
 //        col++;
 //    }
 
