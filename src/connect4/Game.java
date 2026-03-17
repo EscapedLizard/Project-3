@@ -12,6 +12,12 @@ public class Game {
     //Create the JPanel
     JPanel panel = new JPanel(new GridLayout(7,7));
 
+    //For loop to add image to whole board
+    for (int row = 0; row < 7; row++){
+        for (int col = 0; col < 7; )
+
+    }
+//While loop to add buttons to the top of the board
 //    int row = 1;
 //    int col = 1;
 //    while (col < 7){
