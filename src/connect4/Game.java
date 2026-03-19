@@ -135,6 +135,11 @@ public class Game extends JFrame {
         // Load sound
         loadSound();
 
+        ImageIcon icon = new ImageIcon("black.png");
+        for (int i = 0; i < COLS; i++){
+            buttons[i].setIcon(icon);
+        }
+
         setVisible(true);
     }
     /*
@@ -144,7 +149,7 @@ public class Game extends JFrame {
 
         int row = -1;
 
-        // Find lowest empty row
+        // Find the lowest empty row
         for (int r = ROWS -1; r >= 0; r--) {
 
             if (board[r][column] == Piece.EMPTY) {
@@ -175,7 +180,7 @@ public class Game extends JFrame {
         // Check win
         if (checkWin(row, column)) {
 
-            statusLabel.setText(currentPlayer + "wins!");
+            statusLabel.setText(currentPlayer + " wins!");
 
             for (int i = 0; i < COLS; i++) {
                 buttons[i].setEnabled(false);
@@ -206,7 +211,23 @@ public class Game extends JFrame {
             currentPlayer = Piece.BLACK;
         }
 
-        statusLabel.setText(currentPlayer + "turn");
+        ImageIcon icon;
+
+        //Update icons on the top row
+        if (currentPlayer == Piece.BLACK){
+            icon = new ImageIcon("black.png");
+        } else {
+            icon = new ImageIcon("red.png");
+        }
+
+        // Updates all the top buttons
+        for(int i = 0; i < COLS; i++){
+            if (buttons[i].isEnabled()) {
+                buttons[i].setIcon(icon);
+            }
+        }
+
+        statusLabel.setText(currentPlayer + " turn");
     }
 
     /*
