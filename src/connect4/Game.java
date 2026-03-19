@@ -20,13 +20,7 @@ import java.io.File;
 // The assignment requires a JFrame window for the GUI
 public class Game extends JFrame {
     /*
-     * ENUM PIECE:
-     * This enum represents the possible contents of each cell on the board.
-     * Instead of relying on images to track the game state, we store the logical state using this enum.
-     *
-     * RED      -->   Player 2's piece
-     * BLACK    -->   Player1's piece
-     * EMPTY    -->   No piece in that location
+     * ENUM representing the possible pieces on the board
      */
     public enum Piece {
         RED,
@@ -34,79 +28,50 @@ public class Game extends JFrame {
         EMPTY
     }
 
-    // Constants representing board size
+    // Board size
     private static final int ROWS = 6;
     private static final int COLS =7;
 
-    /*
-     * 2D Array storing the game state
-     * Each position contains RED, BLACK, or EMPTY.
-     */
+    // Game state array
     private Piece[][] board;
 
-    /*
-     * labels [][] stores the visual board cells.
-     * Each JLabel displays an image (slot, red piece, black piece, etc.).
-     */
+    // GUI board display
     private JLabel[][] labels;
 
-    /*
-     * buttons [] represents the buttons at the top of each column.
-     * Clicking a button drops a pieces into that column.
-     */
+    // Buttons for columns
     private JButton[] buttons;
 
-    // Label showing whose turn it currently is
+    // Label showing game status
     private JLabel statusLabel;
 
-    // Tracks which player is currently playing
+    // Tracks which player is playing
     private Piece currentPlayer;
 
-    // Counts number of moves played (used to detect tie)
+    // Count total moves (for tie)
     private int moveCount = 0;
 
-    // Sound clip used when a piece is dropped
+    // Sound clip
     private Clip clickSound;
 
 
 
     /*
-     * Constructor: Game()
-     * This method builds the entire graphical user interface.
-     * It creates the window, board, buttons, and initializes the game state.
+     * Constructor
+     * Builds the entire game interface
      */
     public Game() {
-        // Set window title
+
         setTitle("Connect 4");
-
-        // Set window size
         setSize(700, 600);
-
-        // Close program when window closes
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Use BorderLayout for main window
         setLayout(new BorderLayout());
 
-        /*
-         * Create the label showing which player's turn it is.
-         * Initially Player 1 (Black) starts.
-         */
+        // Create status label
         statusLabel = new JLabel("Player 1 (Black) Turn");
-
-        // Center the text
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        // Add label to top of window
         add(statusLabel, BorderLayout.NORTH);
 
-        /*
-         * Create board panel.
-         * The board contains:
-         *      7 columns and 7 rows
-         *  Top row = buttons
-         * Remaining 6 rows = game slots
-         */
+        // Create board panel.
         JPanel boardPanel = new JPanel();
         boardPanel.setLayout(new GridLayout(7, 7));
 
@@ -115,9 +80,7 @@ public class Game extends JFrame {
         labels = new JLabel[ROWS][COLS];
         buttons = new JButton[COLS];
 
-        /*
-         *Fill the board array with EMPTY values meaning no pieces are placed yet.
-         */
+        // Fill the board array with EMPTY
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 board[r][c] = Piece.EMPTY;
@@ -125,37 +88,242 @@ public class Game extends JFrame {
         }
 
         /*
-         *Create the columns buttons (top row).
-         * When clicked, they call dropPiece(column).
+         *Create column buttons
          */
         for (int c = 0; c < COLS; c++) {
 
             JButton button = new JButton();
-
-            // Adjust margins so icons look correct
             button.setMargin(new Insets(-5, -5, -5, -5));
 
-            int column = c;
+            final int column = c;
 
-            // Add click listener to drop piece
-            button.addActionListener(e -> dropPiece(column));
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dropPiece(column);
+                }
+            });
 
             buttons[c] = button;
 
             boardPanel.add(button);
         }
         /*
-         * Create visual board cells.
-         * Each cell initially displays the empty slot image.
+         * Create board slots
          */
         for (int r = 0; r < ROWS; r++) {
+
             for (int c =0; c < COLS; c++) {
 
                 JLabel label = new JLabel();
 
-                // Set image for empty slot
                 label.setIcon(new ImageIcon("slot.png"));
+
+                label.setHorizontalAlignment(JLabel.CENTER);
+
+                labels[r][c] = label;
+
+                boardPanel.add(label);
             }
         }
+
+        add(boardPanel, BorderLayout.CENTER);
+
+        // Player 1 starts
+        currentPlayer = Piece.BLACK;
+
+        // Load sound
+        loadSound();
+
+        setVisible(true);
+    }
+    /*
+     * Drop a piece into a column
+     */
+    private void dropPiece(int column) {
+
+        int row = -1;
+
+        // Find lowest empty row
+        for (int r = ROWS -1; r >= 0; r--) {
+
+            if (board[r][column] == Piece.EMPTY) {
+                row = r;
+                break;
+            }
+        }
+
+        // Column is full
+        if (row == -1) {
+            return;
+        }
+        // Place piece
+        board[row][column] = currentPlayer;
+
+        // Update GUI image
+        if (currentPlayer == Piece.BLACK) {
+            labels[row][column].setIcon(new ImageIcon("black.png"));
+        } else {
+            labels[row][column].setIcon(new ImageIcon("red.png"));
+        }
+
+        // Play sound
+        playSound();
+
+        moveCount++;
+
+        // Check win
+        if (checkWin(row, column)) {
+
+            statusLabel.setText(currentPlayer + "wins!");
+
+            for (int i = 0; i < COLS; i++) {
+                buttons[i].setEnabled(false);
+            }
+            return;
+        }
+
+        // Check tie
+        if (moveCount == 42) {
+
+            statusLabel.setText("Game is a tie!");
+
+            for (int i = 0; i < COLS; i++) {
+                buttons[i].setEnabled(false);
+            }
+            return;
+        }
+
+        // Disable button if column becomes full
+        if (board[0][column] != Piece.EMPTY) {
+            buttons[column].setEnabled(false);
+        }
+
+        // Switch player
+        if(currentPlayer == Piece.BLACK) {
+            currentPlayer = Piece.RED;
+        } else {
+            currentPlayer = Piece.BLACK;
+        }
+
+        statusLabel.setText(currentPlayer + "turn");
+    }
+
+    /*
+     * Check if a move created four in a row
+     */
+    private boolean checkWin(int row, int col) {
+
+        Piece p = board[row][col];
+
+        // Horizontal check
+        int count = 0;
+        for (int c = 0; c < COLS; c++) {
+
+            if (board[row][c] == p) {
+                count++;
+                if (count >= 4) return  true;
+                } else {
+                count = 0;
+            }
+        }
+
+        // Vertical check
+        count = 0;
+        for (int r = 0; r < ROWS; r++) {
+
+            if (board[r][col] == p) {
+                count++;
+                if (count >= 4) return true;
+            } else {
+                count = 0;
+            }
+        }
+
+        // Diagonal (top-left to bottom-right)
+        count = 0;
+        int startRow = row;
+        int startCol = col;
+
+        while(startRow > 0 && startCol > 0) {
+            startRow--;
+            startCol--;
+        }
+
+        while(startRow < ROWS && startCol < COLS) {
+
+            if(board[startRow][startCol] == p) {
+                count++;
+                if(count >= 4) return true;
+            } else {
+                count = 0;
+            }
+            startRow++;
+            startCol++;
+        }
+        // Diagonal (bottom-left to top-right)
+        count = 0;
+        startRow = row;
+        startCol = col;
+
+        while(startRow < ROWS-1 && startCol > 0) {
+            startRow++;
+            startCol--;
+        }
+
+        while(startRow >= 0 && startCol < COLS) {
+            if(board[startRow][startCol] == p) {
+                count++;
+                if(count >= 4) return true;
+            } else {
+                count = 0;
+            }
+
+            startRow--;
+            startCol++;
+        }
+        return false;
+    }
+
+
+
+    /*
+     * Load click sound
+     */
+    private void loadSound() {
+
+        try {
+            AudioInputStream audio =
+                    AudioSystem.getAudioInputStream(new File("click.wav"));
+
+            clickSound = AudioSystem.getClip();
+
+            clickSound.open(audio);
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * Play click sound
+     */
+    private void playSound() {
+
+        if (clickSound != null) {
+
+            clickSound.stop();
+
+            clickSound.setMicrosecondPosition(0);
+
+            clickSound.start();
+        }
+    }
+
+    /*
+     * Main Method
+     */
+    public static void main(String[] args) {
+        new Game ();
     }
 }
