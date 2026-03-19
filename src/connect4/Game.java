@@ -1,7 +1,7 @@
 /*
 Title       : Game.java
 Description : A graphical Connect 4 game using Java Swing where 2 players take turns dropping pieces into a board. The 1st player to connect 4 pieces horizontally, vertically, or diagonally wins
-Author      : Sakina Hussain, Bethany
+Author      : Sakina Hussain, Bethany Mixon
 Date        : 03/16/2026
 Version     : 1.0
 Usage       : Compile and run the program to play Connect 4 with 2 players
@@ -67,6 +67,8 @@ public class Game extends JFrame {
 
     // Sound clip used when a piece is dropped
     private Clip clickSound;
+
+
 
     /*
      * Constructor: Game()
