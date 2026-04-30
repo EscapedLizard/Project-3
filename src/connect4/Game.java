@@ -3,7 +3,8 @@ Title       : Game.java
 Description : A graphical Connect 4 game using Java Swing where 2 players take turns dropping pieces into a board. The 1st player to connect 4 pieces horizontally, vertically, or diagonally wins
 Author      : Sakina Hussain, Bethany Mixon
 Date        : 03/16/2026
-Version     : 1.0
+Version     : 1.1
+Notes       : Corrected the win & turn text, changed button icons to "color"-play instead, made game icons disappear when game ends, winning pieces are highlighted now
 Usage       : Compile and run the program to play Connect 4 with 2 players
 Java Version: 24
  */
@@ -135,7 +136,7 @@ public class Game extends JFrame {
         // Load sound
         loadSound();
 
-        ImageIcon icon = new ImageIcon("black.png");
+        ImageIcon icon = new ImageIcon("black-play.png");
         for (int i = 0; i < COLS; i++){
             buttons[i].setIcon(icon);
         }
@@ -180,9 +181,10 @@ public class Game extends JFrame {
         // Check win
         if (checkWin(row, column)) {
 
-            statusLabel.setText(currentPlayer + " wins!");
+            statusLabel.setText(currentPlayer == Piece.BLACK ? "Player 1 wins!" : "Player 2 wins!");
 
             for (int i = 0; i < COLS; i++) {
+                buttons[i].setIcon(null);
                 buttons[i].setEnabled(false);
             }
             return;
@@ -194,6 +196,7 @@ public class Game extends JFrame {
             statusLabel.setText("Game is a tie!");
 
             for (int i = 0; i < COLS; i++) {
+                buttons[i].setIcon(null);
                 buttons[i].setEnabled(false);
             }
             return;
@@ -215,9 +218,9 @@ public class Game extends JFrame {
 
         //Update icons on the top row
         if (currentPlayer == Piece.BLACK){
-            icon = new ImageIcon("black.png");
+            icon = new ImageIcon("black-play.png");
         } else {
-            icon = new ImageIcon("red.png");
+            icon = new ImageIcon("red-play.png");
         }
 
         // Updates all the top buttons
@@ -227,7 +230,7 @@ public class Game extends JFrame {
             }
         }
 
-        statusLabel.setText(currentPlayer + " turn");
+        statusLabel.setText(currentPlayer == Piece.BLACK ? "Player 1's Turn" : "Player 2's Turn");
     }
 
     /*
@@ -236,28 +239,41 @@ public class Game extends JFrame {
     private boolean checkWin(int row, int col) {
 
         Piece p = board[row][col];
+        String winIcon = (p == Piece.BLACK) ? "black-win.png" : "red-win.png";
+        boolean won = false;
+        int count;
 
         // Horizontal check
-        int count = 0;
+        count = 0;
         for (int c = 0; c < COLS; c++) {
 
             if (board[row][c] == p) {
                 count++;
-                if (count >= 4) return  true;
-                } else {
+            } else {
                 count = 0;
+            }
+            if (count >= 4) {
+                for (int i = c - 3; i <= c; i++) {
+                    labels[row][i].setIcon(new ImageIcon(winIcon));
+                }
+                won = true;
             }
         }
 
-        // Vertical check
         count = 0;
-        for (int r = 0; r < ROWS; r++) {
 
+        for (int r = 0; r < ROWS; r++) {
             if (board[r][col] == p) {
                 count++;
-                if (count >= 4) return true;
             } else {
                 count = 0;
+            }
+
+            if (count >= 4) {
+                for (int i = r - 3; i <= r; i++) {
+                    labels[i][col].setIcon(new ImageIcon(winIcon));
+                }
+                won = true;
             }
         }
 
@@ -275,19 +291,26 @@ public class Game extends JFrame {
 
             if(board[startRow][startCol] == p) {
                 count++;
-                if(count >= 4) return true;
             } else {
                 count = 0;
+            }
+
+            if (count >= 4) {
+                for (int i = 0; i < 4; i++) {
+                    labels[startRow - i][startCol - i].setIcon(new ImageIcon(winIcon));
+                }
+                won = true;
             }
             startRow++;
             startCol++;
         }
+
         // Diagonal (bottom-left to top-right)
         count = 0;
         startRow = row;
         startCol = col;
 
-        while(startRow < ROWS-1 && startCol > 0) {
+        while(startRow < ROWS - 1 && startCol > 0) {
             startRow++;
             startCol--;
         }
@@ -295,15 +318,20 @@ public class Game extends JFrame {
         while(startRow >= 0 && startCol < COLS) {
             if(board[startRow][startCol] == p) {
                 count++;
-                if(count >= 4) return true;
             } else {
                 count = 0;
             }
 
+            if (count >= 4) {
+                for (int i = 0; i < 4; i++) {
+                    labels[startRow + i][startCol - i].setIcon(new ImageIcon(winIcon));
+                }
+                won = true;
+            }
             startRow--;
             startCol++;
         }
-        return false;
+        return won;
     }
 
 
